@@ -1,10 +1,6 @@
-import { Form, Link } from "@remix-run/react";
+import {Form, Link} from "@remix-run/react";
 
-export default function Login({
-  actionData,
-}: {
-  actionData?: { error?: string };
-}) {
+export default function Login({actionData}: {actionData?: {error?: string}}) {
   return (
     <>
       <div className="max-w-md mx-auto mt-12 bg-white rounded-lg shadow p-8">
@@ -23,10 +19,7 @@ export default function Login({
             />
           </div>
           <div>
-            <label
-              className="block text-sm font-medium mb-1"
-              htmlFor="password"
-            >
+            <label className="block text-sm font-medium mb-1" htmlFor="password">
               Password
             </label>
             <input
@@ -39,14 +32,11 @@ export default function Login({
           </div>
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition"
-          >
+            className="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition">
             Login
           </button>
         </Form>
-        {actionData?.error && (
-          <p className="mt-4 text-red-600 text-center">{actionData.error}</p>
-        )}
+        {actionData?.error && <p className="mt-4 text-red-600 text-center">{actionData.error}</p>}
         <p className="mt-6 text-center text-sm text-gray-600">
           Don&apos;t have an account?{" "}
           <Link to="/register" className="text-blue-600 hover:underline">

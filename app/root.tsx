@@ -1,4 +1,4 @@
-import type { LinksFunction } from "@remix-run/node";
+import type {LinksFunction} from "@remix-run/node";
 import {
   Links,
   LiveReload,
@@ -8,31 +8,31 @@ import {
   ScrollRestoration,
   useLoaderData,
 } from "@remix-run/react";
-import { prisma } from "../utils/prisma.server";
-import { getSession } from "../utils/session.server";
+import {prisma} from "../utils/prisma.server";
+import {getSession} from "../utils/session.server";
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
-import styles from "./global.css";
+import "./global.css";
 
-export async function loader({ request }) {
+export async function loader({request}) {
   const session = await getSession(request);
   const userId = session.get("userId");
 
   if (!userId) {
-    return { user: null };
+    return {user: null};
   }
 
   const user = await prisma.profiles.findUnique({
-    where: { userId: userId },
-    select: { id: true, fullName: true, avatarUrl: true },
+    where: {userId: userId},
+    select: {id: true, fullName: true, avatarUrl: true},
   });
-  return { user };
+  return {user};
 }
 
-export const links: LinksFunction = () => [{ rel: "stylesheet", href: styles }];
+export const links: LinksFunction = () => [{rel: "stylesheet", href: "/build/_assets/global.css"}];
 
 export default function App() {
-  const { user } = useLoaderData<typeof loader>();
+  const {user} = useLoaderData<typeof loader>();
   return (
     <html lang="en" className="h-full bg-gray-50">
       <head>
