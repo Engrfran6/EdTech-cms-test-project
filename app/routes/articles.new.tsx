@@ -1,19 +1,18 @@
-import { ActionFunctionArgs, json, redirect } from "@remix-run/node";
-import { Form, useActionData, useLoaderData } from "@remix-run/react";
-import { prisma } from "../../utils/prisma.server";
-import RichTextEditor from "../components/RichTextEditor";
+import {ActionFunctionArgs, json, redirect} from "@remix-run/node";
+import {Form, useActionData, useLoaderData} from "@remix-run/react";
+import {prisma} from "../../utils/prisma.server";
 
 // Loader: fetch articles for parent selection
 export async function loader() {
   const articles = await prisma.article.findMany({
-    select: { id: true, title: true },
-    orderBy: { createdAt: "asc" },
+    select: {id: true, title: true},
+    orderBy: {createdAt: "asc"},
   });
-  return json({ articles });
+  return json({articles});
 }
 
 // Action: create article
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({request}: ActionFunctionArgs) {
   const formData = await request.formData();
   const title = formData.get("title") as string;
   const slug = formData.get("slug") as string;
@@ -21,7 +20,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const parentId = formData.get("parentId") as string | null;
 
   if (!title || !slug) {
-    return json({ error: "Title and slug are required" }, { status: 400 });
+    return json({error: "Title and slug are required"}, {status: 400});
   }
 
   await prisma.article.create({
@@ -37,7 +36,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function NewArticle() {
-  const { articles } = useLoaderData<typeof loader>();
+  const {articles} = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
   return (
@@ -48,23 +47,13 @@ export default function NewArticle() {
         {/* Title */}
         <div>
           <label className="block text-sm font-medium">Title</label>
-          <input
-            type="text"
-            name="title"
-            className="w-full border rounded px-3 py-2"
-            required
-          />
+          <input type="text" name="title" className="w-full border rounded px-3 py-2" required />
         </div>
 
         {/* Slug */}
         <div>
           <label className="block text-sm font-medium">Slug</label>
-          <input
-            type="text"
-            name="slug"
-            className="w-full border rounded px-3 py-2"
-            required
-          />
+          <input type="text" name="slug" className="w-full border rounded px-3 py-2" required />
         </div>
 
         {/* Parent */}
@@ -83,21 +72,18 @@ export default function NewArticle() {
         {/* Content */}
         <div>
           <label className="block text-sm font-medium">Content</label>
-          <RichTextEditor name="content" />
+          <textarea name="content" className="w-full min-h-[50px] border rounded px-3 py-2" />
         </div>
 
         {/* Submit */}
         <button
           type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 cursor-pointer"
-        >
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 cursor-pointer">
           Save
         </button>
       </Form>
 
-      {actionData?.error && (
-        <p className="text-red-600 mt-2">{actionData.error}</p>
-      )}
+      {actionData?.error && <p className="text-red-600 mt-2">{actionData.error}</p>}
     </div>
   );
 }

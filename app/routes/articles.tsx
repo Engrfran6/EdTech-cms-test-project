@@ -1,14 +1,14 @@
-import { LoaderFunctionArgs, json, redirect } from "@remix-run/node";
-import { Form, Link, Outlet, useLoaderData } from "@remix-run/react";
-import { prisma } from "../../utils/prisma.server";
-import { requireUserSession } from "../../utils/session.server";
+import {LoaderFunctionArgs, json, redirect} from "@remix-run/node";
+import {Form, Link, Outlet, useLoaderData, useNavigate} from "@remix-run/react";
+import {prisma} from "../../utils/prisma.server";
+import {requireUserSession} from "../../utils/session.server";
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({request}: LoaderFunctionArgs) {
   await requireUserSession(request);
 
   const articles = await prisma.article.findMany({
-    where: { parentId: null },
-    orderBy: { createdAt: "desc" },
+    where: {parentId: null},
+    orderBy: {createdAt: "desc"},
     select: {
       id: true,
       title: true,
@@ -19,21 +19,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
     },
   });
 
-  return json({ articles });
+  return json({articles});
 }
 
-export async function action({ request }: LoaderFunctionArgs) {
+export async function action({request}: LoaderFunctionArgs) {
   const formData = await request.formData();
   const articleId = formData.get("articleId") as string;
 
   if (articleId) {
-    await prisma.article.delete({ where: { id: articleId } });
+    await prisma.article.delete({where: {id: articleId}});
   }
   return redirect("/articles");
 }
 
 export default function Articles() {
-  const { articles } = useLoaderData<typeof loader>();
+  const {articles} = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
 
   return (
     <div className="max-w-6xl mx-auto p-6">
@@ -41,25 +42,21 @@ export default function Articles() {
         <h1 className="text-2xl font-semibold">Articles</h1>
         <Link
           to="/articles/new"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
           + New Article
         </Link>
       </div>
 
       {/* Articles table */}
-      <div className="overflow-x-auto border rounded">
+      <div className="overflow-x-auto border-2 border-gray-200 rounded">
         <table className="min-w-full text-sm">
-          <thead className="bg-gray-50 text-left">
+          <thead className="bg-gray-200 text-left">
             <tr>
-              <th className="px-4 py-2 w-[40%] font-medium text-gray-600">
-                Title
-              </th>
-              {/* <th className="px-4 py-2 font-medium text-gray-600">Category</th> */}
-              <th className="px-4 py-2 font-medium text-gray-600">Slug</th>
-              <th className="px-4 py-2 font-medium text-gray-600">Preview</th>
-              <th className="px-4 py-2 font-medium text-gray-600">Updated</th>
-              <th className="px-4 py-2 text-right font-medium text-gray-600">
+              <th className="px-4 py-2 w-[40%] font-medium text-gray-600">Title</th>
+              <th className="px-4 py-2 font-medium text-sm text-gray-600 uppercase">Slug</th>
+              <th className="px-4 py-2 font-medium text-sm text-gray-600 uppercase">Content</th>
+              <th className="px-4 py-2 font-medium text-sm text-gray-600 uppercase">Updated</th>
+              <th className="px-4 py-2 text-right font-medium text-sm text-gray-600 uppercase">
                 Actions
               </th>
             </tr>
@@ -67,63 +64,49 @@ export default function Articles() {
           <tbody className="divide-y divide-gray-100">
             {articles.length === 0 ? (
               <tr>
-                <td
-                  colSpan={6}
-                  className="h-24 text-center text-gray-500 italic"
-                >
+                <td colSpan={6} className="h-24 text-center text-gray-500 italic">
                   No articles found. Create your first article to get started.
                 </td>
               </tr>
             ) : (
               articles.map((a) => (
-                <tr key={a.id} className="hover:bg-gray-50">
+                <tr
+                  key={a.id}
+                  className="hover:bg-gray-100 cursor-pointer"
+                  onClick={() => navigate(`/articles/${a.slug}/preview`)}>
                   <td className="px-4 py-2 font-medium">
-                    <div className="flex flex-col gap-1">
-                      <span>{a.title}</span>
-                      {a.parentId && (
-                        <span className="text-xs text-gray-500">
-                          Child article
-                        </span>
-                      )}
+                    <div>
+                      <div className="flex flex-col gap-1 text-xs">
+                        <span className="truncate">{a.title}</span>
+                        {a.parentId && <span className="text-xs text-gray-500">Child article</span>}
+                      </div>
+                      <p className="text-[9px] truncate text-gray-500 ">{a.content}</p>
                     </div>
                   </td>
-                  {/* <td className="px-4 py-2">
-                    <span className="inline-block rounded bg-gray-200 px-2 py-0.5 text-xs text-gray-700">
-                      {a.category ?? "Uncategorized"}
-                    </span>
-                  </td> */}
-                  <td className="px-4 py-2 font-mono text-sm text-gray-500">
-                    /{a.slug}
-                  </td>
-                  <td className="px-4 py-2 max-w-xs text-sm text-gray-600">
+
+                  <td className="px-4 py-2 font-mono text-sm text-gray-500">/{a.slug}</td>
+                  <td className="px-4 py-2 max-w-xs text-xs text-gray-600">
                     <p className="truncate">{a.content}</p>
                   </td>
-                  <td className="px-4 py-2 text-sm text-gray-500">
+                  <td className="flex px-4 py-2 text-xs text-gray-500">
                     {new Date(a.updatedAt).toLocaleDateString("en-US", {
                       year: "numeric",
                       month: "short",
                       day: "numeric",
                     })}
                   </td>
-                  <td className="px-4 py-2 text-right space-x-3">
-                    <Link
-                      to={`/preview/${a.slug}`}
-                      className="text-blue-600 hover:underline"
-                    >
-                      Preview
-                    </Link>
+                  <td className="px-4 py-2 text-right space-x-3 text-xs">
                     <Link
                       to={`/articles/${a.id}/edit`}
-                      className="text-green-600 hover:underline"
-                    >
+                      className="text-green-600 bg-green-200 hover:underline px-2.5 py-0.5 border rounded-sm"
+                      onClick={(e) => e.stopPropagation()}>
                       Edit
                     </Link>
-                    <Form method="post" className="inline">
+                    <Form method="post" className="inline" onClick={(e) => e.stopPropagation()}>
                       <input type="hidden" name="articleId" value={a.id} />
                       <button
                         type="submit"
-                        className="text-red-600 hover:underline"
-                      >
+                        className="text-red-600 bg-red-200 hover:underline px-2.5 py-0.5 border rounded-sm">
                         Delete
                       </button>
                     </Form>

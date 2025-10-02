@@ -1,20 +1,19 @@
-import { ActionFunctionArgs, json, redirect } from "@remix-run/node";
-import { Form, useActionData, useLoaderData } from "@remix-run/react";
-import { prisma } from "../../utils/prisma.server";
-import RichTextEditor from "../components/RichTextEditor";
+import {ActionFunctionArgs, json, redirect} from "@remix-run/node";
+import {Form, useActionData, useLoaderData} from "@remix-run/react";
+import {prisma} from "../../utils/prisma.server";
 
-export async function loader({ params }: { params: { id: string } }) {
+export async function loader({params}: {params: {id: string}}) {
   const article = await prisma.article.findUnique({
-    where: { id: params.id },
+    where: {id: params.id},
   });
   const articles = await prisma.article.findMany({
-    select: { id: true, title: true },
-    orderBy: { createdAt: "asc" },
+    select: {id: true, title: true, content: true},
+    orderBy: {createdAt: "asc"},
   });
-  return json({ article, articles });
+  return json({article, articles});
 }
 
-export async function action({ request, params }: ActionFunctionArgs) {
+export async function action({request, params}: ActionFunctionArgs) {
   const formData = await request.formData();
   const title = formData.get("title") as string;
   const slug = formData.get("slug") as string;
@@ -23,7 +22,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
   try {
     await prisma.article.update({
-      where: { id: params.id },
+      where: {id: params.id},
       data: {
         title,
         slug,
@@ -33,12 +32,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
     });
     return redirect("/articles");
   } catch (error: any) {
-    return json({ error: error.message || "Failed to update article." });
+    return json({error: error.message || "Failed to update article."});
   }
 }
 
 export default function EditArticle() {
-  const { article, articles } = useLoaderData<typeof loader>();
+  const {article, articles} = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
   if (!article) {
@@ -76,8 +75,7 @@ export default function EditArticle() {
           <select
             name="parentId"
             defaultValue={article.parentId ?? ""}
-            className="w-full border rounded px-3 py-2"
-          >
+            className="w-full border rounded px-3 py-2">
             <option value="">No parent (root)</option>
             {articles.map((a) => (
               <option key={a.id} value={a.id}>
@@ -89,19 +87,20 @@ export default function EditArticle() {
 
         <div>
           <label className="block text-sm font-medium">Content</label>
-          <RichTextEditor name="content" defaultValue={article.content} />
+          <textarea
+            name="content"
+            defaultValue={article.content}
+            className="w-full min-h-[50px] border rounded px-3 py-2"
+          />
         </div>
 
         <button
           type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 cursor-pointer"
-        >
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 cursor-pointer">
           Update
         </button>
       </Form>
-      {actionData?.error && (
-        <p className="text-red-600 mt-2">{actionData.error}</p>
-      )}
+      {actionData?.error && <p className="text-red-600 mt-2">{actionData.error}</p>}
     </div>
   );
 }

@@ -1,13 +1,13 @@
-import { EditorContent, useEditor } from "@tiptap/react";
+import {EditorContent, useEditor} from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 
 type Props = {
   name: string;
   defaultValue?: string;
 };
 
-export default function RichTextEditor({ name, defaultValue }: Props) {
+export default function RichTextEditor({name, defaultValue}: Props) {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
